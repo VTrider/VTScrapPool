@@ -25,10 +25,6 @@ do
     return SetMatrix(up_x, up_y, up_z, right_x, right_y, right_z, front_x, front_y, front_z, posit_x, posit_y, posit_z)
     end
 
-    function vsp_math3d.set_position_and_direction(matrix, direction)
-        return vsp_math3d.set_matrix()
-    end
-
     function vsp_math3d.get_right(x)
         local matrix = x or GetTransform(x)
         return SetVector(matrix.right_x, matrix.right_y, matrix.right_z)

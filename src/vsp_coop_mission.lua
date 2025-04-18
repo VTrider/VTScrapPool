@@ -11,6 +11,7 @@ local mission = require("vsp_mission")
 local net = require("vsp_net")
 local object = require("vsp_object")
 local team = require("vsp_team")
+local util = require("vsp_util")
 
 local vsp_coop_mission = {}
 do
@@ -75,16 +76,14 @@ do
         apply_starting_lives()
     end
 
-    local delete_queue = {}
-
     function vsp_coop_mission.Update(dt)
-        RemoveObject(table.remove(delete_queue))
+
     end
 
     function vsp_coop_mission.CreateObject(h)
         if IsRemote(h) then return end
         if GetClassLabel(h) == "recycler" then
-            table.insert(delete_queue, h)
+            util.defer(net.remove_sync_object, h)
         end
     end
 end

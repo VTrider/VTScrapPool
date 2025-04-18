@@ -92,7 +92,10 @@ do
     --- Removes an object for all players without showing any explosions
     --- @param h lightuserdata handle
     function vsp_net.remove_sync_object(h)
-        vsp_net.async_callback(nil, function () RemoveObject(h) end, "RemoveObject", h)
+        SetLocal(h)
+        Hide(h)
+        SetPosition(h, GetPosition(h) + (math3d.up * 1000))
+        util.defer_for(5, RemoveObject, h)
     end
 
     --- Processes remote request and resolves the future
