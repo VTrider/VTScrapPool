@@ -34,7 +34,7 @@ do
         "tug"
     )
 
-    function odf:__dynamic_initializer(file_name)
+    function odf:odf(file_name)
         local handle = OpenODF(file_name)
         assert(handle, "VSP: Invalid ODF file name")
         self.handle = handle

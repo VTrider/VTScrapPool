@@ -8,6 +8,27 @@
 
 local vsp_math3d = {}
 do
+    vsp_math3d.north = SetVector(0, 0, 1)
+    vsp_math3d.east = SetVector(1, 0, 0)
+    vsp_math3d.south = SetVector(0, 0, -1)
+    vsp_math3d.west = SetVector(-1, 0, 0)
+
+    vsp_math3d.up = SetVector(0, 1, 0)
+    vsp_math3d.down = SetVector(0, -1, 0)
+
+    --- SetMatrix() with fixed parameter order
+    --- @return any matrix
+    function vsp_math3d.set_matrix(right_x, right_y, right_z,
+        up_x, up_y, up_z,
+        front_x, front_y, front_z,
+        posit_x, posit_y, posit_z)
+    return SetMatrix(up_x, up_y, up_z, right_x, right_y, right_z, front_x, front_y, front_z, posit_x, posit_y, posit_z)
+    end
+
+    function vsp_math3d.set_position_and_direction(matrix, direction)
+        return vsp_math3d.set_matrix()
+    end
+
     function vsp_math3d.get_right(x)
         local matrix = x or GetTransform(x)
         return SetVector(matrix.right_x, matrix.right_y, matrix.right_z)

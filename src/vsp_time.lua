@@ -16,7 +16,7 @@ do
 
     local all_timers = set.make_set()
 
-    function timer:__dynamic_initializer(duration, looping, callback, ...)
+    function timer:timer(duration, looping, callback, ...)
         self.duration = duration
         self.looping = looping or false
         self.callback = callback

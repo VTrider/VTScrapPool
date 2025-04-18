@@ -25,7 +25,7 @@ do
 
     local callback_listeners = set.make_set()
 
-    function future:__dynamic_initializer()
+    function future:future()
         self.completed = false
         self.result = nil
         self.listener = nil

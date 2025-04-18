@@ -34,7 +34,7 @@ do
     end
 
     --- Polymorphic initializer, inherits parent functions and forwards arguments
-    --- to the class's initializer function
+    --- to the class's constructor function
     --- @generic T : object
     --- @return T
     function object:new(...)
@@ -42,21 +42,21 @@ do
                                           __tostring = self.tostring })
         object.__runtime_class = self:instanceof()
 
-        object:__dynamic_initializer(...)
+        object[object.__runtime_class](object, ...) -- Call constructor
 
         return object
     end
 
     --- Call the parent class constructor or method
-    --- @generic T
+    --- @generic T : object
     --- @param ... any
-    --- @return T | nil
+    --- @return T | any
     function object:super(...)
         if ... then
             -- MUST USE the "this" self not the parent's self (colon syntax)
             -- in order to allow for base clase containers to use the right
             -- overridden functions
-            self.__parent.__dynamic_initializer(self, ...)
+            self.__parent[self.__parent.__runtime_class](self, ...)
             return
         else
             return self.__parent
@@ -75,8 +75,8 @@ do
         error(string.format("VSP: Attempted to call abstract method %s:%s", self:instanceof(), func_string))
     end
 
-    function object:__dynamic_initializer(...)
-        self:abstract("__dynamic_initializer")
+    function object:object(...)
+        self:abstract("object")
     end
 
     --- @return string

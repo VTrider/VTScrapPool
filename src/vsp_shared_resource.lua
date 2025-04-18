@@ -58,7 +58,7 @@ do
         end
     end
 
-    function shared_resource:__dynamic_initializer(name, amount, min, max, team)
+    function shared_resource:shared_resource(name, amount, min, max, team)
         self:super(name, amount, min, max)
 
         self.team = team

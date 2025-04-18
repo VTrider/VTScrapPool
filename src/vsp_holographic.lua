@@ -24,7 +24,7 @@ do
     local drawable_list = set.make_set()
 	drawable_list:make_weak()
 
-	function basic_hologram:__dynamic_initializer(position, color)
+	function basic_hologram:basic_hologram(position, color)
 		self.position = position
         self.color = string.upper((color or "G"))
 
@@ -74,7 +74,7 @@ do
 	holotext.whitespace = ' '
 	holotext.newline = '\n'
 
-	function holotext:__dynamic_initializer(position, text)
+	function holotext:holotext(position, text)
 		self:super(position)
 
 		self.text = text

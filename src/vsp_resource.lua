@@ -17,7 +17,7 @@ do
     --- @field max number
     local resource = object.make_class("resource")
 
-    function resource:__dynamic_initializer(name, amount, min, max)
+    function resource:resource(name, amount, min, max)
         self.name = name
         self.amount = amount
         self.min = min

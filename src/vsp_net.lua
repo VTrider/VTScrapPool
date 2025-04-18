@@ -13,8 +13,10 @@
 --]]
 
 local future = require("vsp_future")
+local math3d = require("vsp_math3d")
 local net_message = require("vsp_net_message")
 local net_player = require("vsp_net_player")
+local util = require("vsp_util")
 
 local exu = require("exu")
 
@@ -32,6 +34,9 @@ do
     --- @param name string function name
     --- @param func function
     function vsp_net.set_function(name, func)
+        if function_table[name] then
+            error("VSP: Function is in use or reserved")
+        end
         function_table[name] = func
     end
 
@@ -39,7 +44,13 @@ do
     --- @param name string
     --- @return function
     function vsp_net.get_function(name)
-        return function_table[name]
+        if function_table[name] then
+            return function_table[name]
+        elseif _G[name] then -- fallback to global if not registered
+                return _G[name]
+        else
+            error("VSP: Function not registered or global")
+        end
     end
 
     --- @type table <number, future> 
@@ -78,6 +89,12 @@ do
         return result:listen(callback)
     end
 
+    --- Removes an object for all players without showing any explosions
+    --- @param h lightuserdata handle
+    function vsp_net.remove_sync_object(h)
+        vsp_net.async_callback(nil, function () RemoveObject(h) end, "RemoveObject", h)
+    end
+
     --- Processes remote request and resolves the future
     --- @param from integer player net ID
     --- @param task_id integer async task ID
@@ -91,7 +108,7 @@ do
     function vsp_net.Receive(from, type, message, task_id, func_string, ...)
         if type ~= net_message.vsp then return end -- only handle VSP messages
         if from == exu.GetMyNetID() then return end -- Don't talk to yourself
-
+        
         if message == net_message.async_request then
             resolve_future(from, task_id, vsp_net.get_function(func_string), ...)
         end

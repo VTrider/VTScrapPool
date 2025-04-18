@@ -15,7 +15,11 @@ do
     --- @type team | nil
     local my_team = nil
 
-    --- @return team|nil
+    function vsp_team.get_me()
+        return GetTeamNum(GetPlayerHandle())
+    end
+
+    --- @return team | nil
     function vsp_team.get_my_team()
         return my_team
     end
@@ -24,13 +28,19 @@ do
     --- @field team_nums set
     local team = object.make_class("team")
 
-    function vsp_team.make_team(...)
-        local self = setmetatable({}, { __index = vsp_team })
-
+    function team:team(name, ...)
+        self.name = name
         -- Map assigned team numbers for players (1, 2, 3, 4... etc.)
         self.team_nums = set.make_set(...)
+        self.player_count = self.team_nums:size()
+    end
 
-        return self
+    function team:get_player_count()
+        return self.player_count
+    end
+
+    function vsp_team.make_team(...)
+        return team:new(...)
     end
 
     function vsp_team.leave_team()

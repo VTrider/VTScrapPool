@@ -15,7 +15,7 @@ do
     --- @field data_count number
     local set = object.make_class("set")
 
-    function set:__dynamic_initializer(...)
+    function set:set(...)
         self.data = {}
 
         local items = {...}
