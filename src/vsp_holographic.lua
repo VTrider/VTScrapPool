@@ -9,9 +9,12 @@
 =======================================
 --]]
 
+local math3d = require("vsp_math3d")
 local object = require("vsp_object")
 local polymorphic = require("vsp_polymorphic")
 local set = require("vsp_set")
+
+local exu = require("exu")
 
 local vsp_holographic = {}
 do
@@ -67,7 +70,7 @@ do
 	--- @field text string text to draw
 	--- @field position userdata vector
 	--- @field color string 'R' 'G' or 'Y'
-    local holotext = object.make_class("holotext ", basic_hologram)
+    local holotext = object.make_class("holotext", basic_hologram)
 
 	holotext.default_tracking = 1.5
 	holotext.default_leading = 2.5
@@ -83,20 +86,20 @@ do
         self.leading = holotext.default_leading
 	end
 
-	--- Creates a directional holo text object
+	--- Creates a directional holo text object, the holo text will persist as long as
+	--- the returned result is stored, or until it's disabled
 	--- @nodiscard
 	--- @param position any vector
 	--- @param text string text to draw
 	--- @return holotext
     function vsp_holographic.make_holotext(position, text)
-		local pos = polymorphic.get_position(position)
-        return holotext:new(pos, text)
+        return holotext:new(polymorphic.get_position(position), text)
     end
 
 	--- @nodiscard
 	--- @return any direction vector
 	function holotext:get_facing_direction()
-		return Normalize(GetPosition(GetPlayerHandle()) - self.position)
+		return Normalize(math3d.get_posit(exu.GetCameraTransformMatrix()) - self.position)
 	end
 
 	--- Completes one render of the holotext (will disappear after the lifespan defined in the odf)

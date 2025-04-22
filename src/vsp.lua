@@ -25,6 +25,7 @@ do
     vsp.net              = require("vsp_net")
     vsp.object           = require("vsp_object")
     vsp.odf              = require("vsp_odf")
+    vsp.polymorphic      = require("vsp_polymorphic")
     vsp.resource         = require("vsp_resource")
     vsp.selection        = require("vsp_selection")
     vsp.set              = require("vsp_set")
@@ -36,6 +37,7 @@ do
 
     function vsp.Start()
         vsp.coop_mission.Start()
+        vsp.mission.Start()
         vsp.shared_resource.Start()
     end
 
@@ -50,6 +52,7 @@ do
 
     function vsp.CreateObject(h)
         vsp.coop_mission.CreateObject(h)
+        vsp.mission.CreateObject(h)
         vsp.shared_resource.CreateObject(h)
     end
 

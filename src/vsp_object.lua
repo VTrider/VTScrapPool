@@ -42,6 +42,8 @@ do
                                           __tostring = self.tostring })
         object.__runtime_class = self:instanceof()
 
+        assert(type(object[object.__runtime_class]) == "function", string.format("VSP: Class %s is missing constructor", object:instanceof()))
+
         object[object.__runtime_class](object, ...) -- Call constructor
 
         return object

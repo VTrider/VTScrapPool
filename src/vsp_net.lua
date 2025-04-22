@@ -23,6 +23,7 @@ local exu = require("exu")
 local vsp_net = {}
 do
     vsp_net.host_id = 1
+    vsp_net.all_players = 0 -- for use in functions that use Send()
 
     --- User defined table of network functions,
     --- this circumvents to "no functions" restriction
@@ -40,17 +41,26 @@ do
         function_table[name] = func
     end
 
-    --- Retrieves the corresponding function pair from its string name
+    --- Retrieves the corresponding function pair from its string name.
+    --- Falls back to globals if not found:
+    --- (NOT RECOMMENDED TO USE GLOBALS OTHER THAN STOCK FUNCTIONS)
     --- @param name string
     --- @return function
     function vsp_net.get_function(name)
         if function_table[name] then
             return function_table[name]
         elseif _G[name] then -- fallback to global if not registered
-                return _G[name]
+            return _G[name]
         else
             error("VSP: Function not registered or global")
         end
+    end
+
+    --- Gets if the current session is singleplayer or if it's multiplayer
+    --- with only one player (the host)
+    --- @return boolean
+    function vsp_net.is_singleplayer_or_solo()
+        return not IsNetGame() or net_player.get_player_count() == 1
     end
 
     --- @type table <number, future> 
@@ -65,6 +75,11 @@ do
     --- @param ... any function parameters
     --- @return future
     function vsp_net.async(who, func_string, ...)
+        if vsp_net.is_singleplayer_or_solo() then
+            local result = future.make_future()
+            return result:resolve(vsp_net.get_function(func_string)(...))
+        end
+
         local task_id = next_task_id
         next_task_id = next_task_id + 1
 
@@ -92,34 +107,132 @@ do
     --- Removes an object for all players without showing any explosions
     --- @param h lightuserdata handle
     function vsp_net.remove_sync_object(h)
-        SetLocal(h)
-        Hide(h)
-        SetPosition(h, GetPosition(h) + (math3d.up * 1000))
-        util.defer_for(5, RemoveObject, h)
+        if vsp_net.is_singleplayer_or_solo() then
+            RemoveObject(h)
+            return
+        end
+        
+        if GetClassLabel(h) == "recycler" then
+            SetLocal(h)
+            Hide(h)
+            SetPosition(h, GetPosition(h) + (math3d.east * 1000))
+            util.defer_for(5, function () -- this is too much voodoo
+                local max_pilots = GetMaxPilot(GetTeamNum(GetPlayerHandle()))
+                local max_scraps = GetMaxScrap(GetTeamNum(GetPlayerHandle()))
+                local cur_pilots = GetPilot(GetTeamNum(GetPlayerHandle()))
+                local cur_scraps = GetScrap(GetTeamNum(GetPlayerHandle()))
+
+                RemoveObject(h)
+
+                SetMaxPilot(GetTeamNum(GetPlayerHandle()), max_pilots)
+                SetMaxScrap(GetTeamNum(GetPlayerHandle()), max_scraps)
+                SetPilot(GetTeamNum(GetPlayerHandle()), cur_pilots)
+                exu.AddScrapSilent(GetTeamNum(GetPlayerHandle()), cur_scraps - GetScrap(GetTeamNum(GetPlayerHandle())))
+            end)
+            return
+        end
+        if IsHosting() then
+            vsp_net.async_callback(vsp_net.all_players, function () RemoveObject(h) end, "RemoveObject", h)
+        else
+            Send(vsp_net.host_id, net_message.vsp, net_message.remote_delete, h)
+        end
+    end
+
+    local is_waiting = false -- each client has their own instance of this
+    local wait_counter = 0 -- the host owns this variable
+    local waiting_callback = function (...) end
+    local waiting_callback_params = {}
+
+    local function try_execute_waiting_function()
+        if wait_counter == net_player.get_player_count() then
+            vsp_net.async(vsp_net.all_players, "reset_wait")
+            is_waiting = false
+            wait_counter = 0
+            waiting_callback(unpack(waiting_callback_params))
+        end
+    end
+
+    vsp_net.set_function("try_wait", function ()
+        assert(IsHosting(), "VSP: Non host processing wait request, something went wrong")
+    
+        wait_counter = wait_counter + 1
+
+        try_execute_waiting_function()
+    end)
+
+    vsp_net.set_function("reset_wait", function ()
+        is_waiting = false
+    end)
+
+    --- Waits for all clients to acknowledge the signal before
+    --- executing the callback.
+    --- @param callback function
+    --- @param ... any callback params
+    function vsp_net.wait_for_all_clients(callback, ...)
+        if vsp_net.is_singleplayer_or_solo() then callback(...) end
+
+        if not is_waiting then
+            if IsHosting() then
+                waiting_callback = callback
+                waiting_callback_params = {...}
+                wait_counter = wait_counter + 1
+            else
+                vsp_net.async(vsp_net.host_id, "try_wait")
+            end
+            is_waiting = true
+        end
+
+        if IsHosting() then
+            try_execute_waiting_function()
+        end
     end
 
     --- Processes remote request and resolves the future
     --- @param from integer player net ID
     --- @param task_id integer async task ID
-    --- @param func function function to acquire the data
+    --- @param func_string string function to acquire the data
     --- @param ... any params
-    local function resolve_future(from, task_id, func, ...)
+    local function resolve_future(from, task_id, func_string, ...)
+        local func = vsp_net.get_function(func_string)
         local result = func(...)
-        Send(from, net_message.vsp, net_message.resolve_future, task_id, nil, result) -- nil for the "function" since we reuse the same Receive params
+
+        Send(from, net_message.vsp, net_message.resolve_future, task_id, result)
     end
 
-    function vsp_net.Receive(from, type, message, task_id, func_string, ...)
-        if type ~= net_message.vsp then return end -- only handle VSP messages
-        if from == exu.GetMyNetID() then return end -- Don't talk to yourself
+    local function get_resolved_future(task_id, result)
+        -- Only handle the first result back from passing nil to async (not recommended due to race condition)
+        if not async_tasks[task_id] then return false end
+
+        assert(async_tasks[task_id], "VSP: Task ID has no associated future")
+        local future = async_tasks[task_id]
+
+        future.result = result
+        future.completed = true
+
+        async_tasks[task_id] = nil
+    end
+
+    local function do_remote_delete(h)
+        vsp_net.async_callback(vsp_net.all_players, function () RemoveObject(h) end, "RemoveObject", h)
+    end
+
+    function vsp_net.Receive(from, type, message, ...)
+        if type ~= net_message.vsp then return false end -- only handle VSP messages
+        if from == exu.GetMyNetID() then return false end -- Don't talk to yourself
         
         if message == net_message.async_request then
-            resolve_future(from, task_id, vsp_net.get_function(func_string), ...)
+            resolve_future(from, ...)
+            return true
         end
 
         if message == net_message.resolve_future then
-            local future = async_tasks[task_id]
-            future.result = ...
-            future.completed = true
+            get_resolved_future(...)
+            return true
+        end
+
+        if message == net_message.remote_delete then
+            do_remote_delete(...)
+            return true
         end
     end
 end

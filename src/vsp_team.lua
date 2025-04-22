@@ -39,8 +39,12 @@ do
         return self.player_count
     end
 
-    function vsp_team.make_team(...)
-        return team:new(...)
+    --- Makes a team object
+    --- @param name string identifier for the team
+    --- @param ... integer team nums
+    --- @return team
+    function vsp_team.make_team(name, ...)
+        return team:new(name, ...)
     end
 
     function vsp_team.leave_team()

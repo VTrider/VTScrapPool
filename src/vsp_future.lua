@@ -49,6 +49,12 @@ do
         return self.completed
     end
 
+    function future:resolve(result)
+        self.result = result
+        self.completed = true
+        return self
+    end
+
     --- Assigns a callback to the future that will automatically get
     --- called when the future resolves
     --- @param callback any

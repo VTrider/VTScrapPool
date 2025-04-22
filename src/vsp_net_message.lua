@@ -10,7 +10,8 @@ local enum = require("vsp_enum")
 
 local net_message = enum.make_enum(
     "async_request",
-    "resolve_future"
+    "resolve_future",
+    "remote_delete"
 )
 
 net_message.vsp = 'v'

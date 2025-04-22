@@ -11,6 +11,8 @@
 
 local object = require("vsp_object")
 
+local exu = require("exu")
+
 local vsp_net_player = {}
 do
     --- @class net_player : object
@@ -20,6 +22,14 @@ do
 
     function vsp_net_player.get_player_list()
         return player_list
+    end
+
+    function vsp_net_player.get_my_name()
+        return player_list[exu.GetMyNetID()].name
+    end
+
+    function vsp_net_player.get_player_count()
+        return #player_list
     end
 
     function net_player:net_player(id, name, team)

@@ -23,5 +23,17 @@ do
         end
         return result
     end
+
+    --- Makes an enum with string values
+    --- @param ... any
+    --- @return table
+    function enum.make_string_enum(...)
+        local result = {}
+        local params = {...}
+        for _, value in pairs(params) do
+            result[value] = value
+        end
+        return result
+    end
 end
 return enum

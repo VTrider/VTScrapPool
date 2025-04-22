@@ -24,13 +24,15 @@ do
         silo = 20
     }
 
+    local scrap_shared = false
+
     --- @class shared_resource : resource, object
     local shared_resource = object.make_class("shared_resource", resource.resource)
 
     vsp_shared_resource.local_scrap_capacity = 0
 
     net.set_function("send_remote_scrap", function (amount)
-        exu.MessageBox(string.format("Got request for %d scrap", amount))
+        -- exu.MessageBox(string.format("Got request for %d scrap", amount))
         exu.AddScrapSilent(GetTeamNum(GetPlayerHandle()), amount)
     end)
 
@@ -69,21 +71,26 @@ do
         return shared_resource:new(name, amount, min, max, team)
     end
 
+    function vsp_shared_resource.make_scrap_shared()
+        scrap_shared = true
+    end
+
     local function do_shared_scrap(team, amount)
+        if scrap_shared == false then return end
         if team ~= GetTeamNum(GetPlayerHandle()) then return end
         net.async(nil, "send_remote_scrap", amount)
-        exu.MessageBox(string.format("Send %d scrap", amount))
+        -- exu.MessageBox(string.format("Send %d scrap", amount))
     end
 
     function vsp_shared_resource.Start()
-        if IsHosting() then
+        -- if IsHosting() then
             
-        end
-        vsp_shared_resource.local_scrap_capacity = enumerate_producers()
+        -- end
+        -- vsp_shared_resource.local_scrap_capacity = enumerate_producers()
     end
 
     function vsp_shared_resource.CreateObject(h)
-        update_max_scrap(h)
+        -- update_max_scrap(h)
     end
 
     function vsp_shared_resource.DeleteObject(h)

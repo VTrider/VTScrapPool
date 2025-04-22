@@ -3,6 +3,11 @@
 *   VT's Scrap Pool
 *   
 *   Cinematics Module
+*
+*   Protected wrappers for the stock
+*   cinematic functions that
+*   additionally hide your scoreboard
+*   in multiplayer.
 =======================================
 --]]
 
@@ -28,6 +33,12 @@ do
             return CameraFinish()
         end
         return false
+    end
+
+    function vsp_cinematic.try_skip()
+        if is_cinematic_playing then
+            
+        end
     end
 end
 return vsp_cinematic
