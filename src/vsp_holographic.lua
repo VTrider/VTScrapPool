@@ -11,8 +11,8 @@
 
 local math3d = require("vsp_math3d")
 local object = require("vsp_object")
-local polymorphic = require("vsp_polymorphic")
 local set = require("vsp_set")
+local util = require("vsp_util")
 
 local exu = require("exu")
 
@@ -93,7 +93,7 @@ do
 	--- @param text string text to draw
 	--- @return holotext
     function vsp_holographic.make_holotext(position, text)
-        return holotext:new(polymorphic.get_position(position), text)
+        return holotext:new(util.get_any_position(position), text)
     end
 
 	--- @nodiscard

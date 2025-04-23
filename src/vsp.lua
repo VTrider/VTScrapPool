@@ -11,7 +11,6 @@
 
 local vsp = {}
 do
-    vsp.assert           = require("vsp_assert")
     vsp.cinematic        = require("vsp_cinematic")
     vsp.coop_mission     = require("vsp_coop_mission")
     vsp.distributed_lock = require("vsp_distributed_lock")
@@ -25,8 +24,6 @@ do
     vsp.net              = require("vsp_net")
     vsp.object           = require("vsp_object")
     vsp.odf              = require("vsp_odf")
-    vsp.polymorphic      = require("vsp_polymorphic")
-    vsp.resource         = require("vsp_resource")
     vsp.selection        = require("vsp_selection")
     vsp.set              = require("vsp_set")
     vsp.shared_resource  = require("vsp_shared_resource")

@@ -6,10 +6,8 @@
 =======================================
 --]]
 
-local assert = require("vsp_assert")
 local net = require("vsp_net")
 local object= require("vsp_object")
-local resource = require("vsp_resource")
 local team = require("vsp_team")
 
 local exu = require("exu")
@@ -25,10 +23,7 @@ do
     }
 
     local scrap_shared = false
-
-    --- @class shared_resource : resource, object
-    local shared_resource = object.make_class("shared_resource", resource.resource)
-
+    
     vsp_shared_resource.local_scrap_capacity = 0
 
     net.set_function("send_remote_scrap", function (amount)
@@ -36,42 +31,8 @@ do
         exu.AddScrapSilent(GetTeamNum(GetPlayerHandle()), amount)
     end)
 
-    local function enumerate_producers()
-        local total = 0
-        if GetRecyclerHandle() then total = total + scrap_storage_values.recycler end
-        if GetFactoryHandle() then total = total + scrap_storage_values.factory end
-        if GetArmoryHandle() then total = total + scrap_storage_values.armory end
-        if GetConstructorHandle() then total = total + scrap_storage_values.constructor end
-        return total
-    end
-
-    local function update_max_scrap(h)
-        local cap = vsp_shared_resource.local_scrap_capacity
-        if h == GetRecyclerHandle() then
-            cap = cap + scrap_storage_values.recycler
-        elseif h == GetFactoryHandle() then
-            cap = cap + scrap_storage_values.factory
-        elseif h == GetArmoryHandle() then
-            cap = cap + scrap_storage_values.armory
-        elseif h == GetConstructorHandle() then
-            cap = cap + scrap_storage_values.constructor
-        else
-            return
-        end
-    end
-
-    function shared_resource:shared_resource(name, amount, min, max, team)
-        self:super(name, amount, min, max)
-
-        self.team = team
-        self.shared_pool = amount
-    end
-
-    function vsp_shared_resource.make_shared(name, amount, min, max, team)
-        return shared_resource:new(name, amount, min, max, team)
-    end
-
     function vsp_shared_resource.make_scrap_shared()
+        if net.is_singleplayer_or_solo () then return end
         scrap_shared = true
     end
 
@@ -83,14 +44,11 @@ do
     end
 
     function vsp_shared_resource.Start()
-        -- if IsHosting() then
-            
-        -- end
-        -- vsp_shared_resource.local_scrap_capacity = enumerate_producers()
+
     end
 
     function vsp_shared_resource.CreateObject(h)
-        -- update_max_scrap(h)
+
     end
 
     function vsp_shared_resource.DeleteObject(h)

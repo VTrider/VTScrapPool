@@ -24,12 +24,14 @@ local util = require("vsp_util")
 
 local vsp_coop_mission = {}
 do
-    vsp_coop_mission.enemy_team = 15
-
     --- @class coop_mission : mission, object
     local coop_mission = object.make_class("coop_mission", mission.mission_class)
 
+    coop_mission.enemy_team = 15
+
     function coop_mission:coop_mission(team)
+        -- even though the base constructor takes no parameters we still need to pass one
+        -- since otherwise it just returns the base class instance to get methods from
         self:super(true)
 
         self.team = team
@@ -40,7 +42,7 @@ do
 
     --- Makes a coop mission instance with the given team
     --- @param team team
-    --- @return coop_mission
+    --- @return any
     function vsp_coop_mission.make_coop(team)
         return coop_mission:new(team)
     end
@@ -100,25 +102,46 @@ do
             end
         end
     end
-    
-    -- these two functions may not be necessary idk
-    net.set_function("coop_sync_var", function (name, value)
-        assert(mission.get_current_mission().var, "fucked")
-        mission.get_current_mission().var[name] = value
-        return name
-    end)
 
-    -- not tested
-    function coop_mission:sync_var(name, value)
-        local result
-        for player_id in self.team.team_nums:iterator() do
-            local f = net.async(player_id, "coop_sync_var", name, value)
-            if player_id ~= GetTeamNum(GetPlayerHandle()) then
-                result = f
-            end
+    --- Build a single object from host only, intended to be used in a shared script between host and clients.
+    --- @param ... any params forwarded to BuildObject
+    function coop_mission:build_single_object(...)
+        if net.is_singleplayer_or_solo() then
+            super:super():build_single_object(...)
         end
-        self.var[name] = value
-        return result
+        if not IsHosting() then return end
+        return self:super():build_single_object(...)
+    end
+
+    --- Build multiple objects around the given area from the host only
+    --- @param odfname string
+    --- @param teamnum integer
+    --- @param position any
+    --- @return table
+    function coop_mission:build_multiple_objects(odfname, teamnum, count, position)
+        if net.is_singleplayer_or_solo() then
+            self:super():build_multiple_objects(odfname, teamnum, count, position)
+        end
+        if not IsHosting() then return {} end
+        return self:super():build_multiple_objects(odfname, teamnum, count, position)
+    end
+
+    --- Synchronized immediate mission success
+    --- @param filename string
+    function coop_mission:succeed(filename)
+        net.wait_for_all_clients(function (filename)
+            net.async(net.all_players, "SucceedMission", GetTime(), filename)
+            SucceedMission(GetTime(), filename)
+        end, filename)
+    end
+
+    --- Synchronized immediate mission failure
+    --- @param filename string
+    function coop_mission:fail(filename)
+        net.wait_for_all_clients(function (filename)
+            net.async(net.all_players, "FailMission", GetTime(), filename)
+            FailMission(GetTime(), filename)
+        end, filename)
     end
 
     net.set_function("make_shared_satellite", function ()
@@ -139,6 +162,8 @@ do
     end
 
     function vsp_coop_mission.Start()
+        if not mission.get_current_mission() then return end
+
         apply_my_spawn_direction()
         apply_starting_lives()
         apply_shared_satellite()
@@ -149,6 +174,8 @@ do
     end
 
     function vsp_coop_mission.CreateObject(h)
+        if not mission.get_current_mission() then return end
+
         apply_starting_recyclers(h)
     end
 end

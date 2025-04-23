@@ -3,6 +3,8 @@
 *   VT's Scrap Pool
 *   
 *   Set Module
+*
+*   A set is a a table with only keys
 =======================================
 --]]
 

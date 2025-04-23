@@ -67,41 +67,66 @@ do
     local async_tasks = {}
     local next_task_id = 1
 
-    --- Dispatches asynchrounous call to the given player (or all players),
-    --- returns a future that may contain a result
+    --- Dispatches an asynchrounous call to the given player (or all players),
+    --- returns a future that may contain a result, or a table of futures (one for each player)
+    --- if you sent the request to all players (nil or 0 or net.all_players)
     --- @async
     --- @param who integer | nil net ID
     --- @param func_string string function to call from the net functions table
     --- @param ... any function parameters
-    --- @return future
+    --- @return future | table <integer, future>
     function vsp_net.async(who, func_string, ...)
         if vsp_net.is_singleplayer_or_solo() then
             local result = future.make_future()
             return result:resolve(vsp_net.get_function(func_string)(...))
         end
 
-        local task_id = next_task_id
-        next_task_id = next_task_id + 1
+        local result
 
-        local result = future.make_future()
-        async_tasks[task_id] = result
+        if who == nil or who == vsp_net.all_players then
+            for i = 1, net_player.get_player_count() do
+                local task_id = next_task_id
+                next_task_id = next_task_id + 1
+        
+                local f = future.make_future()
+                async_tasks[task_id] = f
 
-        Send(who, net_message.vsp, net_message.async_request, task_id, func_string, ...)
+                result = {}
+                table.insert(result, f)
+        
+                Send(i, net_message.vsp, net_message.async_request, task_id, func_string, ...)
+            end
+        else
+            local task_id = next_task_id
+            next_task_id = next_task_id + 1
+    
+            result = future.make_future()
+            async_tasks[task_id] = result
+    
+            Send(who, net_message.vsp, net_message.async_request, task_id, func_string, ...)
+        end
 
         return result
     end
 
-    --- Automatically fetches the result of the future when it's
-    --- available by passing it as a parameter to the callback
+    --- Automatically fetches the result of the asynchrounous call
+    --- when it's available by passing it as a parameter to the callback.
+    --- If there are multiple results (i.e. you sent a request to all players)
+    --- they will all be sent to the same callback.
     --- @async
     --- @param who integer | nil net ID
     --- @param callback function callback to process result
     --- @param func_string string net function
     --- @param ... any params
-    --- @return future
     function vsp_net.async_callback(who, callback, func_string, ...)
         local result = vsp_net.async(who, func_string, ...)
-        return result:listen(callback)
+        if type(result) == "table" then
+            for _, future in ipairs(result) do
+                future:listen(callback)
+            end
+        else
+            result:listen(callback)
+        end
     end
 
     --- Removes an object for all players without showing any explosions
@@ -137,6 +162,8 @@ do
             Send(vsp_net.host_id, net_message.vsp, net_message.remote_delete, h)
         end
     end
+
+    --- Begin wait_for_all_clients code:
 
     local is_waiting = false -- each client has their own instance of this
     local wait_counter = 0 -- the host owns this variable
@@ -186,6 +213,8 @@ do
             try_execute_waiting_function()
         end
     end
+    
+    --- Begin Receive helpers:
 
     --- Processes remote request and resolves the future
     --- @param from integer player net ID

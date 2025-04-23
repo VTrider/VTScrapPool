@@ -14,7 +14,6 @@
 =======================================
 --]]
 
-local assert = require("vsp_assert")
 local future = require("vsp_future")
 local net = require("vsp_net")
 local object = require("vsp_object")
@@ -55,9 +54,9 @@ do
 
     --- Creates a distributed lock, only the host is allowed to manage them
     --- @param id any
-    --- @return distributed_lock
+    --- @return distributed_lock | nil
     function vsp_distributed_lock.make_lock(id)
-        assert.hosting()
+        if not IsHosting() then return nil end
 
         --- @class distributed_lock
         local self = distributed_lock:new()

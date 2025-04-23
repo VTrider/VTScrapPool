@@ -66,6 +66,10 @@ do
         return self
     end
 
+    function vsp_future.listen_pack()
+        
+    end
+
     local function listen_all_callbacks()
         for future in callback_listeners:iterator() do
             if future:peek() then
