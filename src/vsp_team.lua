@@ -56,7 +56,6 @@ do
             for j in self.team_nums:iterator() do
                 Ally(i, j)
             end
-            break -- we only need one iteration to ally everybody
         end
     end
 end

@@ -138,10 +138,10 @@ do
         end
         
         if GetClassLabel(h) == "recycler" then
-            SetLocal(h)
-            Hide(h)
+            if IsRemote(h) then return end
+            SetTeamNum(h, 0)
             SetPosition(h, GetPosition(h) + (math3d.east * 1000))
-            util.defer_for(5, function () -- this is too much voodoo
+            util.defer_for(15, function () -- this is too much voodoo
                 local max_pilots = GetMaxPilot(GetTeamNum(GetPlayerHandle()))
                 local max_scraps = GetMaxScrap(GetTeamNum(GetPlayerHandle()))
                 local cur_pilots = GetPilot(GetTeamNum(GetPlayerHandle()))
@@ -192,7 +192,7 @@ do
     end)
 
     --- Waits for all clients to acknowledge the signal before
-    --- executing the callback.
+    --- executing the callback. (Barrier sync)
     --- @param callback function
     --- @param ... any callback params
     function vsp_net.wait_for_all_clients(callback, ...)

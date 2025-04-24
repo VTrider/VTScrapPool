@@ -25,7 +25,7 @@ do
     local current_mission = nil
 
     --- Gets the current mission instance if it exists
-    --- @return mission
+    --- @return any
     function vsp_mission.get_current_mission()
         return current_mission
     end
@@ -81,7 +81,7 @@ do
 
         assert(self.states[new_state], "VSP: Requested state is undefined")
 
-        -- DisplayMessage("changing state to " .. tostring(new_state))
+        DisplayMessage("changing state to " .. tostring(new_state))
 
         self.current_state_id = new_state
 

@@ -15,6 +15,7 @@
 =======================================
 --]]
 
+local distributed_lock = require("vsp_distributed_lock")
 local math3d = require("vsp_math3d")
 local mission = require("vsp_mission")
 local net = require("vsp_net")
@@ -36,8 +37,7 @@ do
 
         self.team = team
         self.spawn_directions = {}
-
-        self.team:do_ally()
+        self.state_lock = distributed_lock.make_lock()
     end
 
     --- Makes a coop mission instance with the given team
@@ -49,15 +49,39 @@ do
 
     net.set_function("coop_change_state", coop_mission:super().change_state)
 
-    --- Synchronized, authoritative state change. Will work regardless
-    --- of hosting status and propagate the state change to all clients.
-    --- @param new_state any state id
-    function coop_mission:change_state(new_state)
-        if self.current_state_id == new_state then return end
+    local function host_broadcast_state_change(new_state)
+        assert(IsHosting(), "VSP: Non host called broadcast state change")
+
+        local self = mission.get_current_mission()
+
         for player_id in self.team.team_nums:iterator() do
             net.async(player_id, "coop_change_state", nil, new_state)
         end
         self:super().change_state(self, new_state)
+
+        return true -- use this to signal to a lock holder to unlock
+    end
+
+    net.set_function("host_broadcast_state_change", host_broadcast_state_change)
+
+    --- Synchronized host authoritative state change
+    --- @param new_state any state id
+    function coop_mission:change_state(new_state)
+        if self.current_state_id == new_state then return end
+        if IsHosting() then
+            distributed_lock.lock_guard(self.state_lock, host_broadcast_state_change, new_state)
+        else
+            self.state_lock:try_lock():wait(function (acquired)
+                if acquired then
+                    local result = net.async(net.host_id, "host_broadcast_state_change", new_state)
+                    result:wait(function (done)
+                        if done then
+                            self.state_lock:unlock()
+                        end
+                    end)
+                end
+            end)
+        end
     end
 
     local apply_my_spawn_direction = function () end
@@ -91,7 +115,7 @@ do
         end
     end
 
-    local apply_starting_recyclers = function (h) return end
+    local apply_starting_recyclers = function (h) end
 
     function coop_mission:set_starting_recyclers(state)
         if state == false then
@@ -161,12 +185,17 @@ do
         end
     end
 
+    local function apply_mission_alliances()
+        mission.get_current_mission().team:do_ally()
+    end
+
     function vsp_coop_mission.Start()
         if not mission.get_current_mission() then return end
 
         apply_my_spawn_direction()
         apply_starting_lives()
         apply_shared_satellite()
+        apply_mission_alliances()
     end
 
     function vsp_coop_mission.Update(dt)

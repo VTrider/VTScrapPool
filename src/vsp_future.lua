@@ -66,6 +66,8 @@ do
         return self
     end
 
+    future.wait = future.listen
+
     function vsp_future.listen_pack()
         
     end
