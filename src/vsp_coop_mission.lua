@@ -86,8 +86,8 @@ do
 
     local apply_my_spawn_direction = function () end
 
-    --- Sets the direction the given player will be facing when the mission starts.
-    --- @param player number team number
+    --- Sets the direction that the player of the given team number will be facing when they spawn.
+    --- @param player integer team number
     --- @param direction any vector direction
     function coop_mission:set_spawn_direction(player, direction)
         self.spawn_directions[player] = direction
@@ -117,6 +117,8 @@ do
 
     local apply_starting_recyclers = function (h) end
 
+    --- Sets whether or not players will start with a recycler (on by default).
+    --- @param state boolean
     function coop_mission:set_starting_recyclers(state)
         if state == false then
             apply_starting_recyclers = function (h)
@@ -127,11 +129,12 @@ do
         end
     end
 
-    --- Build a single object from host only, intended to be used in a shared script between host and clients.
+    --- Forwards the arguments to BuildObject() and constructs a single synchronized object for the host only.
+    --- Overrides the mission class method.
     --- @param ... any params forwarded to BuildObject
     function coop_mission:build_single_object(...)
         if net.is_singleplayer_or_solo() then
-            super:super():build_single_object(...)
+            return super:super():build_single_object(...)
         end
         if not IsHosting() then return end
         return self:super():build_single_object(...)
@@ -144,7 +147,7 @@ do
     --- @return table
     function coop_mission:build_multiple_objects(odfname, teamnum, count, position)
         if net.is_singleplayer_or_solo() then
-            self:super():build_multiple_objects(odfname, teamnum, count, position)
+            return self:super():build_multiple_objects(odfname, teamnum, count, position)
         end
         if not IsHosting() then return {} end
         return self:super():build_multiple_objects(odfname, teamnum, count, position)

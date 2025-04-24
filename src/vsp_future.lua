@@ -2,7 +2,7 @@
 =======================================
 *   VT's Scrap Pool
 *   
-*   Futures Module
+*   Future Module
 *
 *   A future represents the result of
 *   an asynchrounous operation
@@ -49,6 +49,7 @@ do
         return self.completed
     end
 
+    --- Fills the result of the future and marks it as completed.
     function future:resolve(result)
         self.result = result
         self.completed = true

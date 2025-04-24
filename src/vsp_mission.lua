@@ -24,7 +24,7 @@ do
     --- @class mission
     local current_mission = nil
 
-    --- Gets the current mission instance if it exists
+    --- Gets the current mission instance if it exists.
     --- @return any
     function vsp_mission.get_current_mission()
         return current_mission
@@ -71,7 +71,7 @@ do
         return self
     end
 
-    --- Changes the state of the mission
+    --- Changes the state of the mission.
     --- @param new_state any state id
     function mission:change_state(new_state)
         -- when this is called by a remote player self will not be sent over the net,
@@ -92,12 +92,17 @@ do
         self.current_state:enter_callback()
     end
 
-    function mission:set_initial_state(state)
-        self.initial_state = state
+    function mission:set_initial_state(state_id)
+        self.initial_state = state_id
     end
 
-    --- Defines a per-state event listener for event handlers
-    --- (CreateObject etc)
+    --- Defines a per-state event listener for any stock event handler. CreateObject(h) for example.
+    --- The `state` parameter is the id of the state you wish to attach the listener to.
+    --- `what` is the exact string name of the stock event handler.
+    --- `fun` is the function you wish to execute on trigger the event,
+    --- it's signature should match the event handler exactly,
+    --- so `function(h) end` for a CreateObject(h) listener,
+    --- or `function(id, name, team) end` for a CreatePlayer(id, name, team) listener.
     --- @param state any state id to attach listener
     --- @param what string name of the event handler
     --- @param func fun(...: any)
