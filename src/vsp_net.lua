@@ -121,11 +121,9 @@ do
     function vsp_net.async_callback(who, callback, func_string, ...)
         local result = vsp_net.async(who, func_string, ...)
         if type(result) == "table" then
-            for _, future in ipairs(result) do
-                future:listen(callback)
-            end
+            future.wait_all(result, callback)
         else
-            result:listen(callback)
+            result:wait(callback)
         end
     end
 

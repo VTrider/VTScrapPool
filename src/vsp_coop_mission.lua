@@ -153,19 +153,19 @@ do
     --- Synchronized immediate mission success
     --- @param filename string
     function coop_mission:succeed(filename)
-        net.wait_for_all_clients(function (filename)
+        net.wait_for_all_clients(function ()
             net.async(net.all_players, "SucceedMission", GetTime(), filename)
             SucceedMission(GetTime(), filename)
-        end, filename)
+        end)
     end
 
     --- Synchronized immediate mission failure
     --- @param filename string
     function coop_mission:fail(filename)
-        net.wait_for_all_clients(function (filename)
+        net.wait_for_all_cents(function ()
             net.async(net.all_players, "FailMission", GetTime(), filename)
             FailMission(GetTime(), filename)
-        end, filename)
+        end)
     end
 
     net.set_function("make_shared_satellite", function ()

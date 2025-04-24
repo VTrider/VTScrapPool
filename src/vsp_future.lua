@@ -59,17 +59,33 @@ do
     --- called when the future resolves
     --- @param callback any
     --- @return self
-    function future:listen(callback)
+    function future:wait(callback)
         if self.listener then return self end
         self.listener = callback
         callback_listeners:insert(self)
         return self
     end
 
-    future.wait = future.listen
+    future.listen = future.wait
 
-    function vsp_future.listen_pack()
-        
+    --- Waits for all futures in a table to be completed before passing a table
+    --- of results to the callback
+    --- @param future_table table must be a contiguous "array" table
+    --- @param callback fun(result: table<integer, any>)
+    function vsp_future.wait_all(future_table, callback)
+        local results = {}
+        local completed = 0
+        local total = #future_table
+
+        for i, future in ipairs(future) do
+            future:wait(function (result)
+                results[i] = result
+                completed = completed + 1
+                if completed == total then
+                    callback(results)
+                end
+            end)
+        end
     end
 
     local function listen_all_callbacks()

@@ -32,6 +32,7 @@ do
     local locks = {}
 
     local function try_lock_internal(id)
+        assert(locks[id], string.format("VSP: Lock of id %d does not exist", id))
         local lock = locks[id]
 
         if lock.locked == false then
@@ -73,7 +74,6 @@ do
     --- it succeeeds, otherwise false if the lock is in use
     --- @return future
     function distributed_lock:try_lock()
-        DisplayMessage("try_lock")
         if IsHosting() then
             -- Returns a completed future so the result can be
             -- handled the same no matter if the local player is
@@ -88,7 +88,6 @@ do
     end
 
     function distributed_lock:unlock()
-        DisplayMessage("unlock")
         if IsHosting() then
             unlock_internal(self.id)
         else

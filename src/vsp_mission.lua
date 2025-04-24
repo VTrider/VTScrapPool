@@ -163,7 +163,10 @@ do
         if not current_mission then return end
 
         assert(current_mission.initial_state, "VSP: Initial mission state is undefined")
-        current_mission:change_state(current_mission.initial_state)
+        -- the syntax is important here, we want to call the base class change state method
+        -- because the initial state does not require synchronization in coop, but it should still
+        -- use the current mission (which could be a coop mission) as the self parameter.
+        mission.change_state(current_mission, current_mission.initial_state)
 
         -- some initialization will break if done before Start()
         -- is called, so we need to track that
