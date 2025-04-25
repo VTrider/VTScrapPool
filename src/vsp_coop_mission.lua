@@ -134,7 +134,7 @@ do
     --- @param ... any params forwarded to BuildObject
     function coop_mission:build_single_object(...)
         if net.is_singleplayer_or_solo() then
-            return super:super():build_single_object(...)
+            return self:super():build_single_object(...)
         end
         if not IsHosting() then return end
         return self:super():build_single_object(...)
