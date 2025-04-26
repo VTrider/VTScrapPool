@@ -87,6 +87,8 @@ do
         end
     end
 
+    --- Unlocks the lock, use carefully since there's nothing stopping
+    --- you from unlocking when another client is using the lock.
     function distributed_lock:unlock()
         if IsHosting() then
             unlock_internal(self.id)

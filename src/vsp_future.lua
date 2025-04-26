@@ -62,6 +62,13 @@ do
     --- @return self
     function future:wait(callback)
         if self.listener then return self end
+
+        -- Call back immediately if the result is available
+        if self:peek() then
+            callback(self:get())
+            return self
+        end
+
         self.listener = callback
         callback_listeners:insert(self)
         return self
@@ -78,7 +85,7 @@ do
         local completed = 0
         local total = #future_table
 
-        for i, future in ipairs(future) do
+        for i, future in ipairs(future_table) do
             future:wait(function (result)
                 results[i] = result
                 completed = completed + 1

@@ -211,6 +211,13 @@ do
             try_execute_waiting_function()
         end
     end
+
+    --- Displays a chat message for all players
+    --- @param message string
+    function vsp_net.display_message_all_clients(message)
+        vsp_net.async(vsp_net.all_players, "DisplayMessage", message)
+        DisplayMessage(message)
+    end
     
     --- Begin Receive helpers:
 
@@ -233,8 +240,7 @@ do
         assert(async_tasks[task_id], "VSP: Task ID has no associated future")
         local future = async_tasks[task_id]
 
-        future.result = result
-        future.completed = true
+        future:resolve(result)
 
         async_tasks[task_id] = nil
     end

@@ -165,7 +165,7 @@ do
     --- Synchronized immediate mission failure
     --- @param filename string
     function coop_mission:fail(filename)
-        net.wait_for_all_cents(function ()
+        net.wait_for_all_clients(function ()
             net.async(net.all_players, "FailMission", GetTime(), filename)
             FailMission(GetTime(), filename)
         end)
