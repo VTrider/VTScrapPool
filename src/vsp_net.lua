@@ -57,6 +57,9 @@ do
         end
     end
 
+    -- TODO: This might have some kinda race condition in Start() that's causing it to report
+    -- true incorrectly
+
     --- Gets if the current session is singleplayer or if it's multiplayer
     --- with only one player (the host)
     --- @return boolean
