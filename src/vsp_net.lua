@@ -71,7 +71,7 @@ do
     --- returns a future that may contain a result, or a table of futures (one for each player)
     --- if you sent the request to all players (nil or 0 or net.all_players)
     --- @async
-    --- @param who integer | nil net ID
+    --- @param who integer | nil | team | any
     --- @param func_string string function to call from the net functions table
     --- @param ... any function parameters
     --- @return future | table <integer, future>
@@ -84,6 +84,7 @@ do
         local result
 
         if who == nil or who == vsp_net.all_players then
+            result = {}
             for i = 1, net_player.get_player_count() do
                 local task_id = next_task_id
                 next_task_id = next_task_id + 1
@@ -91,10 +92,23 @@ do
                 local f = future.make_future()
                 async_tasks[task_id] = f
 
-                result = {}
                 table.insert(result, f)
         
                 Send(i, net_message.vsp, net_message.async_request, task_id, func_string, ...)
+            end
+        elseif object.is_object(who) then
+            assert(who:instanceof() == "team", string.format("VSP: object of type %s invalid for async targets", who:instanceof()))
+            result = {}
+            for teamnum in who.team_nums:iterator() do
+                local task_id = next_task_id
+                next_task_id = next_task_id + 1
+        
+                local f = future.make_future()
+                async_tasks[task_id] = f
+
+                table.insert(result, f)
+        
+                Send(teamnum, net_message.vsp, net_message.async_request, task_id, func_string, ...)
             end
         else
             local task_id = next_task_id

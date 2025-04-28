@@ -20,7 +20,7 @@ do
     --- @class future : object
     --- @field completed boolean
     --- @field result any
-    --- @field listener function
+    --- @field listener fun(result: any) | nil
     local future = object.make_class("future")
 
     local callback_listeners = set.make_set()
@@ -32,13 +32,15 @@ do
     end
 
     --- Constructs an empty future object 
-    --- @return future
+    --- @generic T
+    --- @return future<T>
     function vsp_future.make_future()
         return future:new()
     end
 
     --- Returns the result of the future (if it exists)
-    --- @return any | nil
+    --- @generic T
+    --- @return T | nil
     function future:get()
         return self.result
     end
@@ -50,6 +52,9 @@ do
     end
 
     --- Fills the result of the future and marks it as completed.
+    --- @generic T
+    --- @param result T
+    --- @return self
     function future:resolve(result)
         self.result = result
         self.completed = true
@@ -57,8 +62,9 @@ do
     end
 
     --- Assigns a callback to the future that will automatically get
-    --- called when the future resolves
-    --- @param callback any
+    --- called with the result as its first parameter when the future resolves.
+    --- @generic T
+    --- @param callback fun(result: T)
     --- @return self
     function future:wait(callback)
         if self.listener then return self end
@@ -78,8 +84,9 @@ do
 
     --- Waits for all futures in a table to be completed before passing a table
     --- of results to the callback
+    --- @generic T
     --- @param future_table table must be a contiguous "array" table
-    --- @param callback fun(result: table<integer, any>)
+    --- @param callback fun(results: table<integer, T>)
     function vsp_future.wait_all(future_table, callback)
         local results = {}
         local completed = 0

@@ -72,7 +72,7 @@ do
 
     --- Tries to acquire the lock, returns a future with true if
     --- it succeeeds, otherwise false if the lock is in use
-    --- @return future
+    --- @return future<boolean> acquired
     function distributed_lock:try_lock()
         if IsHosting() then
             -- Returns a completed future so the result can be
@@ -97,7 +97,9 @@ do
         end
     end
 
-    --- Executes the callback within the context of a lock
+    --- Executes the callback within the context of a lock. UNSAFE to use
+    --- if the function executes asynchronously, use try_lock() instead and
+    --- wait until you get a result to unlock.
     --- @param lock distributed_lock
     --- @param callback function
     --- @param ... any callback params

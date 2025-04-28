@@ -85,5 +85,12 @@ do
     function object:tostring()
         return string.format("VSP: Instance of class %s", self:instanceof())
     end
+
+    --- Gets if the given data is an object
+    --- @param o any
+    --- @return boolean
+    function vsp_object.is_object(o)
+        return o.__runtime_class ~= nil
+    end
 end
 return vsp_object

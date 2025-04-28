@@ -78,7 +78,10 @@ do
         end
     end
 
-    function vsp_util.Update(dt)
+    --- Special update function that will run before all other
+    --- VSP update functions in order to properly defer function
+    --- calls
+    function vsp_util.PreUpdate(dt)
         if #deferred_queue > 0 then
             local func = table.remove(deferred_queue)
             func()

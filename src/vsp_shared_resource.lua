@@ -9,7 +9,8 @@
 local distributed_lock = require("vsp_distributed_lock")
 local future = require("vsp_future")
 local net = require("vsp_net")
-local object= require("vsp_object")
+local object = require("vsp_object")
+local set = require("vsp_set")
 local team = require("vsp_team")
 
 local exu = require("exu")
@@ -50,6 +51,7 @@ do
     --- @class shared_object : object
     local shared_object = object.make_class("shared_object")
 
+    shared_object.shared_handles = {}
     shared_object.lock = distributed_lock.make_lock()
 
     function shared_object:shared_object(h)
@@ -67,31 +69,74 @@ do
         end
     end)
 
+    net.set_function("client_request_shared_object", function (h)
+        assert(IsHosting(), "VSP: Non host processing shared object request")
+
+
+    end)
+
+    --- TODO: fix this shit
+
+    --- comment
+    --- @param h any
+    --- @return future<shared_object>
     local function make_shared_nav(h)
-        local pos = GetPosition(h)
-        local name = GetObjectiveName(h)
+        local result = future.make_future()
+        if IsHosting() then
+            if shared_object.shared_handles[h] then
+                result:resolve(shared_object.shared_handles[h])
+            else
+                local pos = GetPosition(h)
+                local name = GetObjectiveName(h)
+                net.remove_sync_object(h)       
+                net.async(net.all_players, "build_async_my_team", "apcamr", pos, name)
+                local h = exu.BuildAsyncObject("apcamr", GetTeamNum(GetPlayerHandle()), pos)
+                SetObjectiveName(h, name)
 
-        net.remove_sync_object(h)
+                local shared = shared_object:new(h)
 
-        net.async(net.all_players, "build_async_my_team", "apcamr", pos, name)
+                shared_object.shared_handles[h] = shared
+                result:resolve(shared)
+            end
+        else
+            net.async(net.host_id, "client_request_shared_object", h):wait(function (h)
+                result:resolve(h)
+            end)
+        end
 
-        local h = exu.BuildAsyncObject("apcamr", GetTeamNum(GetPlayerHandle()), pos)
+        return result   
+    end
 
-        SetObjectiveName(h, name)
+    net.set_function("make_shared_nav", make_shared_nav)
 
-        return shared_object:new(h)
+    --- comment
+    --- @param h any
+    --- @return future<shared_object>
+    local function make_shared_satellite(h)
+        
     end
 
     --- Makes an existing game object shared. Shared object creation is synchronized via lock.
-    --- @param h any
+    --- @param h any handle
+    --- @return future<shared_object>
     function vsp_shared_resource.make_shared(h)
-        local result = future.make_future()
-        distributed_lock.lock_guard(shared_object.lock, function ()
-            if GetClassLabel(h) == "camerapod" then
-                result:resolve(make_shared_nav(h))
+        local final_result = future.make_future()
+        shared_object.lock:try_lock():wait(function (acquired)
+            if acquired then
+                local shared_object_future
+                if GetClassLabel(h) == "camerapod" then
+                    shared_object_future = make_shared_nav(h)
+                elseif GetClassLabel(h) == "commtower" then
+                    shared_object_future = make_shared_satellite(h)
+                else
+                    error("VSP: unknown object type for shared object")
+                end
+                shared_object_future:wait(function (result)
+                    final_result:resolve(result)
+                end)
             end
         end)
-        return result
+        return final_result
     end
 
     --- Directly constructs a shared object.

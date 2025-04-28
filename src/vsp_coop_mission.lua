@@ -16,6 +16,7 @@
 --]]
 
 local distributed_lock = require("vsp_distributed_lock")
+local future = require("vsp_future")
 local math3d = require("vsp_math3d")
 local mission = require("vsp_mission")
 local net = require("vsp_net")
@@ -54,12 +55,15 @@ do
 
         local self = mission.get_current_mission()
 
-        for player_id in self.team.team_nums:iterator() do
-            net.async(player_id, "coop_change_state", nil, new_state)
-        end
-        self:super().change_state(self, new_state)
+        -- Pass self as nil because it can't be sent over the net, client will use
+        -- their own mission instance that should be in sync as long as you didn't
+        -- mess anything up.
+        local results = net.async(self.team, "coop_change_state", nil, new_state)
 
-        return true -- use this to signal to a lock holder to unlock
+        future.wait_all(results, function (results)
+            self:super().change_state(self, new_state)
+            self.state_lock:unlock()
+        end)
     end
 
     net.set_function("host_broadcast_state_change", host_broadcast_state_change)
@@ -69,16 +73,15 @@ do
     function coop_mission:change_state(new_state)
         if self.current_state_id == new_state then return end
         if IsHosting() then
-            distributed_lock.lock_guard(self.state_lock, host_broadcast_state_change, new_state)
+            self.state_lock:try_lock():wait(function (acquired)
+                if acquired then
+                    host_broadcast_state_change(new_state)
+                end
+            end)
         else
             self.state_lock:try_lock():wait(function (acquired)
                 if acquired then
-                    local result = net.async(net.host_id, "host_broadcast_state_change", new_state)
-                    result:wait(function (done)
-                        if done then
-                            self.state_lock:unlock()
-                        end
-                    end)
+                    net.async(net.host_id, "host_broadcast_state_change", new_state)
                 end
             end)
         end

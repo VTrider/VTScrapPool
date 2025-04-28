@@ -5,7 +5,9 @@
 *   Combined Header
 *
 *   Make sure to include all of the
-*   event handlers in your map script
+*   event handlers in your map script.
+*   They must be called FIRST before
+*   your own to ensure proper function.
 =======================================
 --]]
 
@@ -39,12 +41,13 @@ do
     end
 
     function vsp.Update(dt)
+        vsp.util.PreUpdate(dt)
+
         vsp.coop_mission.Update(dt)
         vsp.future.Update(dt)
         vsp.holographic.Update(dt)
         vsp.mission.Update(dt)
         vsp.time.Update(dt)
-        vsp.util.Update(dt)
     end
 
     function vsp.CreateObject(h)
