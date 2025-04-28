@@ -90,6 +90,7 @@ do
     --- @param o any
     --- @return boolean
     function vsp_object.is_object(o)
+        if type(o) ~= "table" then return false end
         return o.__runtime_class ~= nil
     end
 end

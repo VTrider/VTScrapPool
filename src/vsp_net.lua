@@ -16,6 +16,7 @@ local future = require("vsp_future")
 local math3d = require("vsp_math3d")
 local net_message = require("vsp_net_message")
 local net_player = require("vsp_net_player")
+local object = require("vsp_object")
 local util = require("vsp_util")
 
 local exu = require("exu")
@@ -86,30 +87,32 @@ do
         if who == nil or who == vsp_net.all_players then
             result = {}
             for i = 1, net_player.get_player_count() do
-                local task_id = next_task_id
-                next_task_id = next_task_id + 1
-        
-                local f = future.make_future()
-                async_tasks[task_id] = f
-
-                table.insert(result, f)
-        
-                Send(i, net_message.vsp, net_message.async_request, task_id, func_string, ...)
+                if i ~= exu.GetMyNetID() then -- FIX THIS SHIT it's fucking up future wait_all
+                    local task_id = next_task_id
+                    next_task_id = next_task_id + 1
+            
+                    local f = future.make_future()
+                    async_tasks[task_id] = f
+    
+                    table.insert(result, f)
+            
+                    Send(i, net_message.vsp, net_message.async_request, task_id, func_string, ...)
+                end
             end
-        elseif object.is_object(who) then
-            assert(who:instanceof() == "team", string.format("VSP: object of type %s invalid for async targets", who:instanceof()))
-            result = {}
-            for teamnum in who.team_nums:iterator() do
-                local task_id = next_task_id
-                next_task_id = next_task_id + 1
+        -- elseif object.is_object(who) then -- NOT WORKING returns nil
+        --     assert(who:instanceof() == "team", string.format("VSP: object of type %s invalid for async targets", who:instanceof()))
+        --     result = {}
+        --     for teamnum in who.team_nums:iterator() do
+        --         local task_id = next_task_id
+        --         next_task_id = next_task_id + 1
         
-                local f = future.make_future()
-                async_tasks[task_id] = f
+        --         local f = future.make_future()
+        --         async_tasks[task_id] = f
 
-                table.insert(result, f)
+        --         table.insert(result, f)
         
-                Send(teamnum, net_message.vsp, net_message.async_request, task_id, func_string, ...)
-            end
+        --         Send(teamnum, net_message.vsp, net_message.async_request, task_id, func_string, ...)
+        --     end
         else
             local task_id = next_task_id
             next_task_id = next_task_id + 1

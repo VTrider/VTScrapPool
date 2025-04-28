@@ -113,7 +113,7 @@ do
     --- @param h any
     --- @return future<shared_object>
     local function make_shared_satellite(h)
-        
+        return shared_object:new()
     end
 
     --- Makes an existing game object shared. Shared object creation is synchronized via lock.

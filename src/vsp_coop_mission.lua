@@ -19,6 +19,7 @@ local distributed_lock = require("vsp_distributed_lock")
 local future = require("vsp_future")
 local math3d = require("vsp_math3d")
 local mission = require("vsp_mission")
+local net_player = require("vsp_net_player")
 local net = require("vsp_net")
 local object = require("vsp_object")
 local team = require("vsp_team")
@@ -58,9 +59,18 @@ do
         -- Pass self as nil because it can't be sent over the net, client will use
         -- their own mission instance that should be in sync as long as you didn't
         -- mess anything up.
-        local results = net.async(self.team, "coop_change_state", nil, new_state)
 
-        future.wait_all(results, function (results)
+        local acknowledgements = {}
+
+        -- TODO: refactor this is voodoo and should all be handled in net.async
+        for _, player in pairs(net_player.get_player_list()) do
+            if player.id ~= exu.GetMyNetID() then
+                local a = net.async(player.id, "coop_change_state", nil, new_state)
+                table.insert(acknowledgements, a)
+            end
+        end
+
+        future.wait_all(acknowledgements, function (results)
             self:super().change_state(self, new_state)
             self.state_lock:unlock()
         end)
