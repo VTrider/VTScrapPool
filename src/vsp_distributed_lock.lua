@@ -32,6 +32,10 @@ do
     local locks = {}
 
     local function try_lock_internal(id)
+        if not IsHosting() then
+            print(debug.traceback())
+            error("VSP: non host called try_lock_internal")
+        end
         assert(locks[id], string.format("VSP: Lock of id %d does not exist", id))
         local lock = locks[id]
 
@@ -56,6 +60,8 @@ do
     function distributed_lock:distributed_lock()
         -- only the host stores state information,
         -- clients only have methods to request it from the host
+        print("feuker")
+        print(debug.traceback())
         self.id = next_lock_id
         next_lock_id = next_lock_id + 1
         if IsHosting() then
