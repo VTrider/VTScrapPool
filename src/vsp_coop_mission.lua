@@ -53,7 +53,7 @@ do
     net.set_function("coop_change_state", coop_mission:super().change_state)
 
     local function host_broadcast_state_change(new_state)
-        assert(IsHosting(), "VSP: Non host called broadcast state change")
+        assert(net.is_hosting(), "VSP: Non host called broadcast state change")
 
         local self = mission.get_current_mission()
 
@@ -83,7 +83,7 @@ do
     --- @param new_state any state id
     function coop_mission:change_state(new_state)
         if self.current_state_id == new_state then return end
-        if IsHosting() then
+        if net.is_hosting() then
             self.state_lock:try_lock():wait(function (acquired)
                 if acquired then
                     host_broadcast_state_change(new_state)
@@ -121,7 +121,7 @@ do
     --- @param count number
     function coop_mission:set_life_count(count)
         apply_starting_lives = function () -- this is hacky but it works lol, SetLives needs to be called in Start or post
-            if not IsHosting() then return end
+            if not net.is_hosting() then return end
             for player_id in self.team.team_nums:iterator() do
                 net.async(player_id, "set_remote_lives", count)
             end
@@ -143,54 +143,67 @@ do
         end
     end
 
-    local built_single_handle = pair.make_pair()
-
-    net.set_function("client_request_built_handle", function (line)
-        if line == built_single_handle.first then
-            return built_single_handle.second
-        else
-            return false
-        end
-    end)
-
-    local function wait_for_handle(result, line)
-        net.async(net.host_id, "client_request_built_handle", line):wait(function (h)
-            if h then
-                result:resolve(h)
-            else
-                wait_for_handle(result, line)
-            end
-        end)
-    end
-
     --- Forwards the arguments to BuildObject() and constructs a single synchronized object for the host only.
     --- Overrides the mission class method.
     --- @param ... any params forwarded to BuildObject
-    --- @return future<userdata> handle
+    --- @return userdata | nil handle
     function coop_mission:build_single_object(...)
-        local result = future.make_future()
-        if IsHosting() then
-            local h = self:super():build_single_object(...)
-            built_single_handle.first = util.get_line_number()
-            built_single_handle.second = h
-            result:resolve(h)
-        else
-            wait_for_handle(result, util.get_line_number())
+        if net.is_hosting() then
+            return self:super():build_single_object(...)
         end
-        return result
     end
 
     --- Build multiple objects around the given area from the host only
     --- @param odfname string
     --- @param teamnum integer
     --- @param position any
-    --- @return table
+    --- @return table<userdata> | table<nil>
     function coop_mission:build_multiple_objects(odfname, teamnum, count, position)
         if net.is_singleplayer_or_solo() then
             return self:super():build_multiple_objects(odfname, teamnum, count, position)
         end
-        if not IsHosting() then return {} end
+        if not net.is_hosting() then return {} end
         return self:super():build_multiple_objects(odfname, teamnum, count, position)
+    end
+
+    --- These are fooked right now do not use
+
+    net.set_function("sync_mission_var", function (name, var)
+        local m = mission.get_current_mission()
+        assert(m, "VSP: Current mission is nil")
+
+        m.var[name] = var
+
+        return true
+    end)
+
+    net.set_function("sync_state_var", function (state, name, var)
+        local m = mission.get_current_mission()
+        assert(m, "VSP: Current mission is nil")
+
+        m.states[state][name] = var
+
+        return true
+    end)
+
+    function coop_mission:sync_mission_var(name, var, callback, ...)
+        if net.is_hosting() then
+            self.var[name] = var
+
+            local results = net.async(net.all_players, "sync_mission_var", name, var)
+            local params = {...}
+
+            future.wait_all(results, function ()
+                callback(unpack(params))
+            end)
+        end
+    end
+
+    function coop_mission:sync_state_var(state, name, var, callback, ...)
+        if net.is_hosting() then
+            local results = net.async(net.all_players, "sync_state_var", state, name, var)
+            future.wait_all(results, callback)
+        end
     end
 
     --- Synchronized immediate mission success

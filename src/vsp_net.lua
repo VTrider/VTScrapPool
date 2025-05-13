@@ -67,6 +67,16 @@ do
         return not IsNetGame()
     end
 
+    --- @type boolean
+    local am_i_original_host = IsHosting()
+
+    --- Checks if the current player is hosting, but specifically the
+    --- original host so that the mission doesn't error out upon host migration.
+    --- @return boolean
+    function vsp_net.is_hosting()
+        return am_i_original_host
+    end
+
     --- @type table <number, future> 
     local async_tasks = {}
     local next_task_id = 1
@@ -174,7 +184,7 @@ do
             end)
             return
         end
-        if IsHosting() then
+        if vsp_net.is_hosting() then
             vsp_net.async_callback(vsp_net.all_players, function () RemoveObject(h) end, "RemoveObject", h)
         else
             Send(vsp_net.host_id, net_message.vsp, net_message.remote_delete, h)
@@ -198,7 +208,7 @@ do
     end
 
     vsp_net.set_function("try_wait", function ()
-        assert(IsHosting(), "VSP: Non host processing wait request, something went wrong")
+        assert(vsp_net.is_hosting(), "VSP: Non host processing wait request, something went wrong")
     
         wait_counter = wait_counter + 1
 
@@ -217,7 +227,7 @@ do
         if vsp_net.is_singleplayer_or_solo() then callback(...) end
 
         if not is_waiting then
-            if IsHosting() then
+            if vsp_net.is_hosting() then
                 waiting_callback = callback
                 waiting_callback_params = {...}
                 wait_counter = wait_counter + 1
@@ -227,7 +237,7 @@ do
             is_waiting = true
         end
 
-        if IsHosting() then
+        if vsp_net.is_hosting() then
             try_execute_waiting_function()
         end
     end

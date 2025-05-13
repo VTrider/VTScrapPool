@@ -30,7 +30,7 @@ do
     local locks = {}
 
     local function try_lock_internal(id)
-        if not IsHosting() then
+        if not net.is_hosting() then
             print(debug.traceback())
             error("VSP: non host called try_lock_internal")
         end
@@ -60,7 +60,7 @@ do
         -- clients only have methods to request it from the host
         self.id = next_lock_id
         next_lock_id = next_lock_id + 1
-        if IsHosting() then
+        if net.is_hosting() then
             self.locked = false
             locks[self.id] = self
         end
@@ -76,7 +76,7 @@ do
     --- it succeeeds, otherwise false if the lock is in use
     --- @return future<boolean> acquired
     function distributed_lock:try_lock()
-        if IsHosting() then
+        if net.is_hosting() then
             -- Returns a completed future so the result can be
             -- handled the same no matter if the local player is
             -- hosting or not
@@ -89,7 +89,7 @@ do
     end
 
     -- function distributed_lock:retry_lock(callback, ...)
-    --     if IsHosting() then
+    --     if net.is_hosting() then
     --         local result = future.make_future()
     --         result:resolve(try_lock_internal(self.id))
     --         if result:get() == true then
@@ -111,7 +111,7 @@ do
     --- Unlocks the lock, use carefully since there's nothing stopping
     --- you from unlocking when another client is using the lock.
     function distributed_lock:unlock()
-        if IsHosting() then
+        if net.is_hosting() then
             unlock_internal(self.id)
         else
             net.async(net.host_id, "unlock_internal", self.id)

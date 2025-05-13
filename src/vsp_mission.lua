@@ -81,7 +81,7 @@ do
 
         assert(self.states[new_state], "VSP: Requested state is undefined")
 
-        DisplayMessage("changing state to " .. tostring(new_state))
+        -- DisplayMessage("changing state to " .. tostring(new_state))
 
         self.current_state_id = new_state
 
