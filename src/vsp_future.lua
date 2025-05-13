@@ -33,6 +33,7 @@ do
 
     --- Constructs an empty future object 
     --- @generic T
+    --- @nodiscard
     --- @return future<T>
     function vsp_future.make_future()
         return future:new()
@@ -40,12 +41,14 @@ do
 
     --- Returns the result of the future (if it exists)
     --- @generic T
+    --- @nodiscard
     --- @return T | nil
     function future:get()
         return self.result
     end
 
     --- Check to see if the future has been completed
+    --- @nodiscard
     --- @return boolean
     function future:peek()
         return self.completed
@@ -77,6 +80,7 @@ do
 
         self.listener = callback
         callback_listeners:insert(self)
+
         return self
     end
 

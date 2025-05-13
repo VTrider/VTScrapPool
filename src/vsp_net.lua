@@ -45,6 +45,7 @@ do
     --- Retrieves the corresponding function pair from its string name.
     --- Falls back to globals if not found:
     --- (NOT RECOMMENDED TO USE GLOBALS OTHER THAN STOCK FUNCTIONS)
+    --- @nodiscard
     --- @param name string
     --- @return function
     function vsp_net.get_function(name)
@@ -57,14 +58,13 @@ do
         end
     end
 
-    -- TODO: This might have some kinda race condition in Start() that's causing it to report
-    -- true incorrectly
-
     --- Gets if the current session is singleplayer or if it's multiplayer
     --- with only one player (the host)
+    --- 
+    --- Note: ONLY DETECTING SINGLEPLAYER CURRENTLY
     --- @return boolean
     function vsp_net.is_singleplayer_or_solo()
-        return not IsNetGame() or net_player.get_player_count() == 1
+        return not IsNetGame()
     end
 
     --- @type table <number, future> 

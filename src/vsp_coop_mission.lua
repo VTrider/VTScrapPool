@@ -22,6 +22,7 @@ local mission = require("vsp_mission")
 local net_player = require("vsp_net_player")
 local net = require("vsp_net")
 local object = require("vsp_object")
+local pair = require("vsp_pair")
 local team = require("vsp_team")
 local util = require("vsp_util")
 
@@ -142,15 +143,41 @@ do
         end
     end
 
+    local built_single_handle = pair.make_pair()
+
+    net.set_function("client_request_built_handle", function (line)
+        if line == built_single_handle.first then
+            return built_single_handle.second
+        else
+            return false
+        end
+    end)
+
+    local function wait_for_handle(result, line)
+        net.async(net.host_id, "client_request_built_handle", line):wait(function (h)
+            if h then
+                result:resolve(h)
+            else
+                wait_for_handle(result, line)
+            end
+        end)
+    end
+
     --- Forwards the arguments to BuildObject() and constructs a single synchronized object for the host only.
     --- Overrides the mission class method.
     --- @param ... any params forwarded to BuildObject
+    --- @return future<userdata> handle
     function coop_mission:build_single_object(...)
-        if net.is_singleplayer_or_solo() then
-            return self:super():build_single_object(...)
+        local result = future.make_future()
+        if IsHosting() then
+            local h = self:super():build_single_object(...)
+            built_single_handle.first = util.get_line_number()
+            built_single_handle.second = h
+            result:resolve(h)
+        else
+            wait_for_handle(result, util.get_line_number())
         end
-        if not IsHosting() then return end
-        return self:super():build_single_object(...)
+        return result
     end
 
     --- Build multiple objects around the given area from the host only

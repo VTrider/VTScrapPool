@@ -78,6 +78,11 @@ do
         end
     end
 
+    function vsp_util.get_line_number()
+        local info = debug.getinfo(2, "l")
+        return info.currentline
+    end
+
     --- Special update function that will run before all other
     --- VSP update functions in order to properly defer function
     --- calls

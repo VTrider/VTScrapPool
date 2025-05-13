@@ -4,22 +4,20 @@
 *   
 *   Distributed Lock Module
 *
-*   Synchronization object to protect
-*   shared network data
+*   Network synchronization object to
+*   protect shared data
 *
-*   This may or may not be necessary
-*   for shared scrap and stuff
-*   depending on if race conditions
-*   are encountered in normal gameplay
+*   Use this to ensure that only one
+*   player can access a resource or
+*   function at a time (changing mission
+*   state in coop for example).
 =======================================
 --]]
 
 local future = require("vsp_future")
 local net = require("vsp_net")
 local object = require("vsp_object")
-local set = require("vsp_set")
-
-local exu = require("exu")
+local util = require("vsp_util")
 
 local vsp_distributed_lock = {}
 do
@@ -60,8 +58,6 @@ do
     function distributed_lock:distributed_lock()
         -- only the host stores state information,
         -- clients only have methods to request it from the host
-        print("feuker")
-        print(debug.traceback())
         self.id = next_lock_id
         next_lock_id = next_lock_id + 1
         if IsHosting() then
@@ -85,13 +81,32 @@ do
             -- handled the same no matter if the local player is
             -- hosting or not
             local result = future.make_future()
-            result.result = try_lock_internal(self.id)
-            result.completed = true
+            result:resolve(try_lock_internal(self.id))
             return result
         else
             return net.async(net.host_id, "try_lock_internal", self.id)
         end
     end
+
+    -- function distributed_lock:retry_lock(callback, ...)
+    --     if IsHosting() then
+    --         local result = future.make_future()
+    --         result:resolve(try_lock_internal(self.id))
+    --         if result:get() == true then
+    --             callback(...)
+    --         else            
+    --             util.defer(distributed_lock.retry_lock, self, callback, ...)
+    --         end
+    --     else
+    --         net.async(net.host_id, "try_lock_internal", self.id):wait(function (result)
+    --             if result:get() == true then
+    --                 callback(...)
+    --             else
+    --                 util.defer(distributed_lock.retry_lock, self, callback, ...)
+    --             end
+    --         end)
+    --     end
+    -- end
 
     --- Unlocks the lock, use carefully since there's nothing stopping
     --- you from unlocking when another client is using the lock.

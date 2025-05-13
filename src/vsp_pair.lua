@@ -21,11 +21,12 @@ do
         self.second = second
     end
 
-    --- comment
+    --- Make a pair object
     --- @generic T
     --- @generic U
-    --- @param first `T`
-    --- @param second `U`
+    --- @nodiscard
+    --- @param first? `T`
+    --- @param second? `U`
     --- @return pair <T, U>
     function vsp_pair.make_pair(first, second)
         return pair:new(first, second)

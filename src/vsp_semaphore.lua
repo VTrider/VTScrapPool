@@ -32,7 +32,7 @@ do
             return false
         else
             s.counter = s.counter - 1
-            assert(s.counter > 0, "VSP: Semaphore counter dropped below 0")
+            assert(s.counter >= 0, "VSP: Semaphore counter dropped below 0")
             return true
         end
     end
