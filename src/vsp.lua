@@ -11,7 +11,7 @@
 =======================================
 --]]
 
-local vsp = {} -- test
+local vsp = {}
 do
     vsp.cinematic        = require("vsp_cinematic")
     vsp.coop_mission     = require("vsp_coop_mission")
