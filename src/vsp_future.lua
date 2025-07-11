@@ -42,7 +42,7 @@ do
     --- Returns the result of the future (if it exists)
     --- @generic T
     --- @nodiscard
-    --- @return T | nil
+    --- @return T
     function future:get()
         return self.result
     end
