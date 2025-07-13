@@ -137,7 +137,7 @@ do
         if state == false then
             apply_starting_recyclers = function (h)
                 if GetClassLabel(h) == "recycler" then
-                    util.defer(net.remove_sync_object, h)
+                    utility.defer(net.remove_sync_object, h)
                 end
             end
         end

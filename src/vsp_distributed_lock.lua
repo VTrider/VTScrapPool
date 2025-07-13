@@ -95,14 +95,14 @@ do
     --         if result:get() == true then
     --             callback(...)
     --         else            
-    --             util.defer(distributed_lock.retry_lock, self, callback, ...)
+    --             utility.defer(distributed_lock.retry_lock, self, callback, ...)
     --         end
     --     else
     --         net.async(net.host_id, "try_lock_internal", self.id):wait(function (result)
     --             if result:get() == true then
     --                 callback(...)
     --             else
-    --                 util.defer(distributed_lock.retry_lock, self, callback, ...)
+    --                 utility.defer(distributed_lock.retry_lock, self, callback, ...)
     --             end
     --         end)
     --     end

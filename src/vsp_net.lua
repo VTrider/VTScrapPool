@@ -169,7 +169,7 @@ do
             if IsRemote(h) then return end
             SetTeamNum(h, 0)
             SetPosition(h, GetPosition(h) + (math3d.east * 1000))
-            util.defer_for(15, function () -- this is too much voodoo
+            utility.defer_for(15, function () -- this is too much voodoo
                 local max_pilots = GetMaxPilot(GetTeamNum(GetPlayerHandle()))
                 local max_scraps = GetMaxScrap(GetTeamNum(GetPlayerHandle()))
                 local cur_pilots = GetPilot(GetTeamNum(GetPlayerHandle()))

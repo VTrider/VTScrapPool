@@ -93,7 +93,7 @@ do
 	--- @param text string text to draw
 	--- @return holotext
     function vsp_holographic.make_holotext(position, text)
-        return holotext:new(util.get_any_position(position), text)
+        return holotext:new(utility.get_any_position(position), text)
     end
 
 	--- @nodiscard
