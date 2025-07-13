@@ -17,7 +17,7 @@
 local future = require("vsp_future")
 local net = require("vsp_net")
 local object = require("vsp_object")
-local util = require("vsp_util")
+local utility = require("vsp_utility")
 
 local vsp_distributed_lock = {}
 do

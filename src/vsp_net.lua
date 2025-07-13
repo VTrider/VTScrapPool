@@ -17,7 +17,7 @@ local math3d = require("vsp_math3d")
 local net_message = require("vsp_net_message")
 local net_player = require("vsp_net_player")
 local object = require("vsp_object")
-local util = require("vsp_util")
+local utility = require("vsp_utility")
 
 local exu = require("exu")
 

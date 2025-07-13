@@ -12,7 +12,7 @@
 local math3d = require("vsp_math3d")
 local object = require("vsp_object")
 local set = require("vsp_set")
-local util = require("vsp_util")
+local utility = require("vsp_utility")
 
 local exu = require("exu")
 

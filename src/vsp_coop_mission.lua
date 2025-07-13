@@ -24,7 +24,7 @@ local net = require("vsp_net")
 local object = require("vsp_object")
 local pair = require("vsp_pair")
 local team = require("vsp_team")
-local util = require("vsp_util")
+local utility = require("vsp_utility")
 
 local vsp_coop_mission = {}
 do
