@@ -65,7 +65,7 @@ do
             start_objects[#start_objects+1] = object
         end
         -- Fulfill start object requests that happened before Start()
-        for request in pre_start_obj_requests do
+        for _, request in ipairs(pre_start_obj_requests) do
             request:resolve(start_objects)
         end
         post_start = true
