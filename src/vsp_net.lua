@@ -60,11 +60,9 @@ do
 
     --- Gets if the current session is singleplayer or if it's multiplayer
     --- with only one player (the host)
-    --- 
-    --- Note: ONLY DETECTING SINGLEPLAYER CURRENTLY
     --- @return boolean
     function vsp_net.is_singleplayer_or_solo()
-        return not IsNetGame()
+        return not IsNetGame() or net_player.get_player_count() == 1
     end
 
     --- @type boolean

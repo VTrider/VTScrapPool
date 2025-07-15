@@ -82,6 +82,11 @@ do
     --- Synchronized host authoritative state change
     --- @param new_state any state id
     function coop_mission:change_state(new_state)
+        if net.is_singleplayer_or_solo() then
+            self:super().change_state(self, new_state)
+            return
+        end
+
         if self.current_state_id == new_state then return end
         if net.is_hosting() then
             self.state_lock:try_lock():wait(function (acquired)

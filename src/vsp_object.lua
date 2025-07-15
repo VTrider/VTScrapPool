@@ -61,7 +61,7 @@ do
             self.__parent[self.__parent.__runtime_class](self, ...)
             return
         else
-            return self.__parent
+            return self.__parent -- Todo fix this so there's no variance in calling it with dot or colon
         end
     end
 

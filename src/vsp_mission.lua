@@ -79,7 +79,7 @@ do
         self = self or current_mission
         if self.current_state_id == new_state then return end
 
-        assert(self.states[new_state], "VSP: Requested state is undefined")
+        assert(self.states[new_state], string.format("VSP: Requested state %s is undefined", new_state))
 
         -- DisplayMessage("changing state to " .. tostring(new_state))
 
