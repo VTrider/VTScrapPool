@@ -83,6 +83,19 @@ do
         return info.currentline
     end
 
+    --- Helper to verify the existance of and type check incoming parameters to a function 
+    --- @param param any the value of the param
+    --- @param name string name of the param
+    --- @param typename string a built in type as used in the type() function
+    --- @param who? string the name of the caller ie. "VSP"
+    --- @return any the original param if successful
+    function vsp_utility.required_param(param, name, typename, who)
+        who = who or "VSP"
+        assert(param, string.format("%s: Missing required param %s", who, name))
+        assert(type(param) == typename, string.format("%s: Expected type %s for required param %s, got %s", who, typename, name, type(param)))
+        return param
+    end
+
     --- Special update function that will run before all other
     --- VSP update functions in order to properly defer function
     --- calls

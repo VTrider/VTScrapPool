@@ -14,6 +14,7 @@ do
     --- @class timer : object
     local timer = object.make_class("timer")
 
+    --- @type set<timer>
     local all_timers = set.make_set()
 
     function timer:timer(duration, looping, callback, ...)
@@ -65,11 +66,15 @@ do
         return self
     end
 
+    function timer:is_active()
+        return self.active
+    end
+
     function timer:get_ratio()
         return self.elapsed_time / self.duration
     end
 
-    function timer:update(dt)
+    function timer:__update(dt)
         if not self.active then return end
 
         self.elapsed_time = self.elapsed_time + dt
@@ -86,7 +91,7 @@ do
 
     local function update_all_timers(dt)
         for timer in all_timers:iterator() do
-            timer:update(dt)
+            timer:__update(dt)
         end
     end
 

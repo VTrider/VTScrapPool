@@ -11,7 +11,6 @@ local future = require("vsp_future")
 local net = require("vsp_net")
 local object = require("vsp_object")
 local set = require("vsp_set")
-local team = require("vsp_team")
 
 local exu = require("exu")
 

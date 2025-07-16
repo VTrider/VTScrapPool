@@ -40,6 +40,9 @@ do
         self.handle = handle
     end
 
+    --- comment
+    --- @param file_name string
+    --- @return odf
     function vsp_odf.open(file_name)
         return odf:new(file_name)
     end
