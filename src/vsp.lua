@@ -33,6 +33,7 @@ do
     vsp.zone              = require("vsp_zone")
 
     function vsp.Start()
+        vsp.utility.PreStart()
         vsp.object_service.PreStart()
 
         vsp.shared_resource.Start()

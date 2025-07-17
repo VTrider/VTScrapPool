@@ -96,6 +96,38 @@ do
         return param
     end
 
+    local post_start = false
+
+    --- Returns whether or not Start() has been called yet, as long as vsp is the first
+    --- module loaded in Start()
+    --- @return boolean
+    function vsp_utility.post_start()
+        return post_start
+    end
+
+    --- Returns a sequence of values from a first and last integer (both inclusive)
+    --- If only one param is provided it will be from 1 to the provided param (last).
+    --- @param first_or_last integer
+    --- @param last? integer
+    --- @return integer ...
+    function vsp_utility.sequence(first_or_last, last)
+        local sequence = {}
+        if last then
+            for i = first_or_last, last, 1 do
+                sequence[#sequence+1] = i
+            end
+        else
+            for i = 1, first_or_last, 1 do
+                sequence[#sequence+1] = i
+            end
+        end
+        return unpack(sequence)
+    end
+
+    function vsp_utility.PreStart()
+        post_start = true
+    end
+
     --- Special update function that will run before all other
     --- VSP update functions in order to properly defer function
     --- calls

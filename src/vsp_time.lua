@@ -21,7 +21,7 @@ do
         self.duration = duration
         self.looping = looping or false
         self.callback = callback
-        self.params = ...
+        self.params = {...}
 
         self.elapsed_time = 0.0
         self.active = false
@@ -80,7 +80,7 @@ do
         self.elapsed_time = self.elapsed_time + dt
 
         if self.elapsed_time >= self.duration then
-            self.callback(self.params)
+            self.callback(unpack(self.params))
             if self.looping then
                 self:reset()
             else
