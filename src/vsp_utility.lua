@@ -92,7 +92,9 @@ do
     function vsp_utility.required_param(param, name, typename, who)
         who = who or "VSP"
         assert(param, string.format("%s: Missing required param %s", who, name))
-        assert(type(param) == typename, string.format("%s: Expected type %s for required param %s, got %s", who, typename, name, type(param)))
+        if typename ~= "any" then
+            assert(type(param) == typename, string.format("%s: Expected type %s for required param %s, got %s", who, typename, name, type(param)))
+        end
         return param
     end
 
