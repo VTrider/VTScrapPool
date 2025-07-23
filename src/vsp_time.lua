@@ -1,7 +1,7 @@
 --[[
 =======================================
 *   VT's Scrap Pool
-*   
+*
 *   Time Module
 =======================================
 --]]
@@ -11,6 +11,10 @@ local set = require("vsp_set")
 
 local vsp_time = {}
 do
+    function vsp_time.minutes(count)
+        return count * 60.0
+    end
+
     --- @class timer : object
     local timer = object.make_class("timer")
 
@@ -21,7 +25,7 @@ do
         self.duration = duration
         self.looping = looping or false
         self.callback = callback
-        self.params = {...}
+        self.params = { ... }
 
         self.elapsed_time = 0.0
         self.active = false
@@ -100,3 +104,4 @@ do
     end
 end
 return vsp_time
+
