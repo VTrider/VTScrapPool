@@ -87,8 +87,10 @@ do
     end
 
     --- Makes the table use weak references
+    --- @return self
     function set:make_weak()
         setmetatable(self.data, { __mode = 'k' })
+        return self
     end
 
     function set:tostring()
