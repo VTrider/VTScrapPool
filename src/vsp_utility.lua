@@ -51,12 +51,16 @@ do
         return result
     end
 
+    --- @alias position_t Handle | string | Vector | Matrix 
+
     --- Gets the vector position from various data types that store a position
     --- @nodiscard
-    --- @param x any handle, matrix, vector, path, or table/object position
+    --- @param x position_t handle, matrix, vector, path, or table/object position
     --- @param y? integer path point if path
     --- @return any vector
     function vsp_utility.get_any_position(x, y)
+        -- Lua language server is super fked with the type inference here so
+        -- I'm not going to bother with type and cast annotations
         if type(x) == "userdata" then
             if x.posit_x then -- matrix case
                 return SetVector(x.posit_x, x.posit_y, x.posit_z)
