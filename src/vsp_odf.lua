@@ -14,7 +14,7 @@ local set = require("vsp_set")
 local vsp_odf = {}
 do
     --- @class odf : object
-    --- @field handle userdata
+    --- @field handle ParameterDB
     local odf = object.make_class("odf")
 
     odf.offense_class_labels = set.make_set(
@@ -66,7 +66,7 @@ do
     --- @param section? string
     --- @param label string
     --- @param default? boolean
-    --- @return boolean
+    --- @return boolean, boolean
     function odf:get_bool(section, label, default)
         return GetODFBool(self.handle, section, label, default)
     end
@@ -75,7 +75,7 @@ do
     --- @param section? string
     --- @param label string
     --- @param default? integer
-    --- @return integer
+    --- @return integer, boolean
     function odf:get_int(section, label, default)
         return GetODFInt(self.handle, section, label, default)
     end
@@ -84,7 +84,7 @@ do
     --- @param section? string
     --- @param label string
     --- @param default? number
-    --- @return number
+    --- @return number, boolean
     function odf:get_float(section, label, default)
         return GetODFFloat(self.handle, section, label, default)
     end
@@ -93,7 +93,7 @@ do
     --- @param section? string
     --- @param label string
     --- @param default? string
-    --- @return string
+    --- @return string, boolean
     function odf:get_string(section, label, default)
         return GetODFString(self.handle, section, label, default)
     end
