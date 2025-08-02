@@ -15,6 +15,7 @@ do
     vsp.cinematic         = require("vsp_cinematic")
     vsp.distributed_lock  = require("vsp_distributed_lock")
     vsp.enum              = require("vsp_enum")
+    vsp.functional        = require("vsp_functional")
     vsp.future            = require("vsp_future")
     vsp.holographic       = require("vsp_holographic")
     vsp.math3d            = require("vsp_math3d")

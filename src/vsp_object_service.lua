@@ -38,7 +38,7 @@ do
     --- Returns a future with a table of handles of the objects that existed at game
     --- Start(). Calls after Start() will be immediately usable, calling before Start()
     --- loose in the script will return an unresolved future you will have to wait() on.
-    --- @return future<table<userdata>>
+    --- @return future<table<Handle>>
     function vsp_object_service.get_start_objects()
         local objects = future.make_future()
 

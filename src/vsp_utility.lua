@@ -9,6 +9,7 @@
 =======================================
 --]]
 
+local functional = require("vsp_functional")
 local future = require("vsp_future")
 local time = require("vsp_time")
 
@@ -51,12 +52,16 @@ do
         return result
     end
 
+    --- @alias position_t Handle | string | Vector | Matrix 
+
     --- Gets the vector position from various data types that store a position
     --- @nodiscard
-    --- @param x any handle, matrix, vector, path, or table/object position
+    --- @param x position_t handle, matrix, vector, path, or table/object position
     --- @param y? integer path point if path
     --- @return any vector
     function vsp_utility.get_any_position(x, y)
+        -- Lua language server is super fked with the type inference here so
+        -- I'm not going to bother with type and cast annotations
         if type(x) == "userdata" then
             if x.posit_x then -- matrix case
                 return SetVector(x.posit_x, x.posit_y, x.posit_z)
@@ -83,20 +88,9 @@ do
         return info.currentline
     end
 
-    --- Helper to verify the existance of and type check incoming parameters to a function 
-    --- @param param any the value of the param
-    --- @param name string name of the param
-    --- @param typename string a built in type as used in the type() function
-    --- @param who? string the name of the caller ie. "VSP"
-    --- @return any the original param if successful
-    function vsp_utility.required_param(param, name, typename, who)
-        who = who or "VSP"
-        assert(param, string.format("%s: Missing required param %s", who, name))
-        if typename ~= "any" then
-            assert(type(param) == typename, string.format("%s: Expected type %s for required param %s, got %s", who, typename, name, type(param)))
-        end
-        return param
-    end
+    --- This function has been moved to vsp_functional, this alias will be removed in the future
+    --- @deprecated
+    vsp_utility.required_param = functional.required_param
 
     local post_start = false
 
