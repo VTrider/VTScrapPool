@@ -53,21 +53,5 @@ do
         return math.acos(DotProduct(v, w) / (Length(v) * Length(w)))
     end
 
-    --- Checks if two vectors are occluded by terrain or other
-    --- walkable floor objects
-    --- @param origin Vector
-    --- @param dest Vector
-    function vsp_math3d.is_occluded(origin, dest)
-        local dir = Normalize(dest - origin)
-        local steps = math.floor(Length(dest - origin))
-        local pos = origin
-        for _ = 1, steps do
-            local floor_height = GetFloorHeightAndNormal(pos)
-            pos = pos + dir
-            if floor_height < 0 then return true end -- height < 0 is below ground, or inside of occluding terrain/objects
-        end
-        return false
-    end
-
 end
 return vsp_math3d

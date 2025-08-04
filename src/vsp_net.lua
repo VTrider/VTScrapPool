@@ -101,12 +101,12 @@ do
                 if i ~= exu.GetMyNetID() then -- FIX THIS SHIT it's fucking up future wait_all
                     local task_id = next_task_id
                     next_task_id = next_task_id + 1
-
+            
                     local f = future.make_future()
                     async_tasks[task_id] = f
-
+    
                     table.insert(result, f)
-
+            
                     Send(i, net_message.vsp, net_message.async_request, task_id, func_string, ...)
                 end
             end
@@ -116,21 +116,21 @@ do
         --     for teamnum in who.team_nums:iterator() do
         --         local task_id = next_task_id
         --         next_task_id = next_task_id + 1
-
+        
         --         local f = future.make_future()
         --         async_tasks[task_id] = f
 
         --         table.insert(result, f)
-
+        
         --         Send(teamnum, net_message.vsp, net_message.async_request, task_id, func_string, ...)
         --     end
         else
             local task_id = next_task_id
             next_task_id = next_task_id + 1
-
+    
             result = future.make_future()
             async_tasks[task_id] = result
-
+    
             Send(who, net_message.vsp, net_message.async_request, task_id, func_string, ...)
         end
 
@@ -156,7 +156,7 @@ do
     end
 
     --- Removes an object for all players without showing any explosions
-    --- @param h userdata handle
+    --- @param h lightuserdata handle
     function vsp_net.remove_sync_object(h)
         if vsp_net.is_singleplayer_or_solo() then
             RemoveObject(h)
