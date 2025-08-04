@@ -10,6 +10,8 @@
 =======================================
 --]]
 
+local object = require("vsp_object")
+
 local vsp_functional = {}
 do
     --- Helper to verify the existance of and type check incoming parameters to a function 
@@ -27,8 +29,35 @@ do
         return param
     end
 
-    function vsp_functional.parameter_pack()
-        
+    --- @class parameter_pack : object
+    local parameter_pack = object.make_class("parameter_pack")
+
+    function parameter_pack:parameter_pack(pack)
+        self.pack = vsp_functional.required_param(pack, "pack", "table")
+    end
+
+    --- Get a required parameter from the pack
+    --- @generic T
+    --- @param name string
+    --- @param typename? string
+    --- @return T
+    function parameter_pack:required(name, typename)
+        return vsp_functional.required_param(self.pack[name], name, typename or "any")
+    end
+
+    --- Get an optional parameter from the pack
+    --- @generic T
+    --- @param name string
+    --- @return T
+    function parameter_pack:optional(name)
+        return self.pack[name]
+    end
+
+    --- Creates a parameter pack object the given table
+    --- @param pack table<string, any>
+    --- @return parameter_pack
+    function vsp_functional.parameter_pack(pack)
+        return parameter_pack:new(pack)
     end
 
     --- Compose multiple filter functions into one for methods that require
