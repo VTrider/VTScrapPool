@@ -62,9 +62,9 @@ do
         local steps = math.floor(Length(dest - origin))
         local pos = origin
         for _ = 1, steps do
-            local floor_height = GetFloorHeightAndNormal(pos)
+            local floor_height, _ = GetFloorHeightAndNormal(pos)
             pos = pos + dir
-            if floor_height < 0 then return true end -- height < 0 is below ground, or inside of occluding terrain/objects
+            if pos.y < floor_height then return true end
         end
         return false
     end
